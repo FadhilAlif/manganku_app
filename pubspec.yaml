@@ -76,6 +76,7 @@ dependencies:
   firebase_ml_model_downloader: ^0.4.0
   package_rename: ^1.10.0
   image: ^4.5.4
+  skeletonizer: ^2.1.0+1
 
 dev_dependencies:
   flutter_test:

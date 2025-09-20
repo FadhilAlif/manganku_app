@@ -4,6 +4,7 @@ class Nutrition {
   final int calories;
   final int fiber;
   final int fat;
+  final int sugar;
 
   const Nutrition({
     required this.carbohydrate,
@@ -11,6 +12,7 @@ class Nutrition {
     required this.calories,
     required this.fiber,
     required this.fat,
+    required this.sugar,
   });
 
   factory Nutrition.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class Nutrition {
       calories: json['calories'] as int,
       fiber: json['fiber'] as int,
       fat: json['fat'] as int,
+      sugar: json['sugar'] as int,
     );
   }
 
@@ -30,6 +33,7 @@ class Nutrition {
       'calories': calories,
       'fiber': fiber,
       'fat': fat,
+      'sugar': sugar,
     };
   }
 }

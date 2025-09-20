@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:manganku_app/core/models/nutrition.dart';
 import 'package:manganku_app/core/services/gemini_service.dart';
 import 'package:manganku_app/core/services/mealdb_service.dart';
@@ -315,21 +316,45 @@ class _ResultPageState extends State<ResultPage> {
               ],
             ),
             const SizedBox(height: 12),
-            if (_loadingDescription)
-              const Center(child: CircularProgressIndicator())
-            else if (_descriptionError != null)
-              Text(
-                'Unable to load description',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              )
-            else if (_foodDescription != null)
-              Text(
-                _foodDescription!,
-                style: Theme.of(context).textTheme.bodyMedium,
+            Skeletonizer(
+              enabled: _loadingDescription,
+              effect: const ShimmerEffect(
+                baseColor: Colors.grey,
+                highlightColor: Colors.white,
+                duration: Duration(seconds: 1),
               ),
+              child: _loadingDescription
+                  ? _buildSkeletonDescription()
+                  : _descriptionError != null
+                  ? Text(
+                      'Unable to load description',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    )
+                  : _foodDescription != null
+                  ? Text(
+                      _foodDescription!,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    )
+                  : const SizedBox.shrink(),
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSkeletonDescription() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(height: 16, width: double.infinity, color: Colors.grey[300]),
+        const SizedBox(height: 4),
+        Container(height: 16, width: double.infinity, color: Colors.grey[300]),
+        const SizedBox(height: 4),
+        Container(height: 16, width: 200, color: Colors.grey[300]),
+      ],
     );
   }
 
@@ -359,15 +384,26 @@ class _ResultPageState extends State<ResultPage> {
               ],
             ),
             const SizedBox(height: 16),
-            if (_loadingNutrition)
-              const Center(child: CircularProgressIndicator())
-            else if (_nutritionError != null)
-              Text(
-                'Unable to load nutrition info',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              )
-            else if (_nutrition != null)
-              _buildNutritionGrid(_nutrition!),
+            Skeletonizer(
+              enabled: _loadingNutrition,
+              effect: const ShimmerEffect(
+                baseColor: Colors.grey,
+                highlightColor: Colors.white,
+                duration: Duration(seconds: 1),
+              ),
+              child: _loadingNutrition
+                  ? _buildSkeletonNutritionGrid()
+                  : _nutritionError != null
+                  ? Text(
+                      'Unable to load nutrition info',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    )
+                  : _nutrition != null
+                  ? _buildNutritionGrid(_nutrition!)
+                  : const SizedBox.shrink(),
+            ),
           ],
         ),
       ),
@@ -385,6 +421,7 @@ class _ResultPageState extends State<ResultPage> {
       {'label': 'Protein', 'value': '${nutrition.protein}', 'unit': 'g'},
       {'label': 'Fat', 'value': '${nutrition.fat}', 'unit': 'g'},
       {'label': 'Fiber', 'value': '${nutrition.fiber}', 'unit': 'g'},
+      {'label': 'Sugar', 'value': '${nutrition.sugar}', 'unit': 'g'},
     ];
 
     return GridView.builder(
@@ -392,13 +429,64 @@ class _ResultPageState extends State<ResultPage> {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 2.5,
+        childAspectRatio: 2.2,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
       ),
       itemCount: nutritionItems.length,
       itemBuilder: (context, index) {
         final item = nutritionItems[index];
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceVariant,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                item['label']!,
+                style: Theme.of(context).textTheme.bodySmall,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                '${item['value']} ${item['unit']}',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSkeletonNutritionGrid() {
+    final skeletonItems = [
+      {'label': 'Calories', 'value': '150', 'unit': 'kcal'},
+      {'label': 'Carbohydrate', 'value': '20', 'unit': 'g'},
+      {'label': 'Protein', 'value': '8', 'unit': 'g'},
+      {'label': 'Fat', 'value': '5', 'unit': 'g'},
+      {'label': 'Fiber', 'value': '3', 'unit': 'g'},
+      {'label': 'Sugar', 'value': '2', 'unit': 'g'},
+    ];
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 2.2,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
+      itemCount: skeletonItems.length,
+      itemBuilder: (context, index) {
+        final item = skeletonItems[index];
         return Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
@@ -454,18 +542,53 @@ class _ResultPageState extends State<ResultPage> {
               ],
             ),
             const SizedBox(height: 16),
-            if (_loadingMealInfo)
-              const Center(child: CircularProgressIndicator())
-            else if (_mealError != null || _mealInfo == null)
-              Text(
-                'No recipe information found',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              )
-            else
-              _buildMealInfoContent(_mealInfo!),
+            Skeletonizer(
+              enabled: _loadingMealInfo,
+              effect: const ShimmerEffect(
+                baseColor: Colors.grey,
+                highlightColor: Colors.white,
+                duration: Duration(seconds: 1),
+              ),
+              child: _loadingMealInfo
+                  ? _buildSkeletonMealInfo()
+                  : _mealError != null || _mealInfo == null
+                  ? Text(
+                      'No recipe information found',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    )
+                  : _buildMealInfoContent(_mealInfo!),
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSkeletonMealInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: 150,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(height: 24, width: 200, color: Colors.grey[300]),
+        const SizedBox(height: 12),
+        Container(height: 18, width: 100, color: Colors.grey[300]),
+        const SizedBox(height: 4),
+        Container(height: 16, width: double.infinity, color: Colors.grey[300]),
+        const SizedBox(height: 4),
+        Container(height: 16, width: double.infinity, color: Colors.grey[300]),
+        const SizedBox(height: 4),
+        Container(height: 16, width: 150, color: Colors.grey[300]),
+      ],
     );
   }
 

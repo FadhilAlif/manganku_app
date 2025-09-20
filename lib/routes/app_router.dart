@@ -2,13 +2,13 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:manganku_app/features/home/presentation/home_page.dart';
 import 'package:manganku_app/features/preview/presentation/preview_page.dart';
-import 'package:manganku_app/features/debug/firebase_status_page.dart';
+import 'package:manganku_app/features/settings/presentation/settings_page.dart';
 import 'package:manganku_app/features/result/presentation/result_page.dart';
 
 class AppRouter {
   static const String homeRoute = '/';
   static const String previewRoute = '/preview';
-  static const String firebaseStatusRoute = '/firebase-status';
+  static const String settingsRoute = '/settings';
   static const String resultRoute = '/result';
 
   static final GoRouter router = GoRouter(
@@ -28,9 +28,9 @@ class AppRouter {
         },
       ),
       GoRoute(
-        path: firebaseStatusRoute,
-        name: 'firebase-status',
-        builder: (context, state) => const FirebaseStatusPage(),
+        path: settingsRoute,
+        name: 'settings',
+        builder: (context, state) => const SettingsPage(),
       ),
       GoRoute(
         path: resultRoute,

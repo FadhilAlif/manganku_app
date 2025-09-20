@@ -100,8 +100,8 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () => context.push('/firebase-status'),
-            tooltip: 'Firebase Status',
+            onPressed: () => context.push('/settings'),
+            tooltip: 'Settings',
           ),
         ],
       ),
@@ -111,11 +111,7 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(
-              Icons.restaurant,
-              size: 100,
-              color: Colors.orange,
-            ),
+            const Icon(Icons.restaurant, size: 100, color: Colors.orange),
             const SizedBox(height: 12),
             Text(
               'Recognize Your Food',
