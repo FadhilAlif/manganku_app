@@ -20,11 +20,17 @@ class _SettingsPageState extends State<SettingsPage> {
   String? _currentApiKey;
   Map<String, dynamic> _serviceStatus = {};
 
+  // Firebase ML Model state
+  bool _isModelLoading = false;
+  Map<String, dynamic> _modelInfo = {};
+  String _modelStatus = 'Checking...';
+
   @override
   void initState() {
     super.initState();
     _loadCurrentApiKey();
     _checkServicesStatus();
+    _checkModelStatus();
   }
 
   @override
@@ -78,6 +84,76 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       _isLoading = false;
     });
+  }
+
+  Future<void> _checkModelStatus() async {
+    try {
+      final firebaseMLService = FirebaseMLService();
+      await firebaseMLService.initialize();
+
+      final modelInfo = await firebaseMLService.getModelInfo();
+      setState(() {
+        _modelInfo = modelInfo;
+        _modelStatus = modelInfo['isDownloaded']
+            ? 'Downloaded (${modelInfo['sizeFormatted'] ?? 'Unknown size'})'
+            : 'Not Downloaded';
+      });
+    } catch (e) {
+      setState(() {
+        _modelInfo = {'error': e.toString()};
+        _modelStatus = 'Error: ${e.toString()}';
+      });
+    }
+  }
+
+  Future<void> _downloadModel() async {
+    setState(() {
+      _isModelLoading = true;
+    });
+
+    try {
+      final firebaseMLService = FirebaseMLService();
+      await firebaseMLService.initialize();
+
+      final model = await firebaseMLService.downloadLatestModel();
+
+      // Refresh status after download
+      await _checkModelStatus();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Model downloaded successfully! Size: ${_formatFileSize(model.size)}',
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to download model: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _isModelLoading = false;
+      });
+    }
+  }
+
+  String _formatFileSize(int bytes) {
+    if (bytes <= 0) return '0 B';
+    const suffixes = ['B', 'KB', 'MB', 'GB'];
+    var i = (bytes.bitLength - 1) ~/ 10;
+    if (i >= suffixes.length) i = suffixes.length - 1;
+    return '${(bytes / (1 << (i * 10))).toStringAsFixed(1)} ${suffixes[i]}';
   }
 
   Future<void> _saveApiKey() async {
@@ -242,6 +318,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   children: [
                     _buildApiKeySection(),
                     const SizedBox(height: 24),
+                    _buildFirebaseMLSection(),
+                    const SizedBox(height: 24),
                     _buildServiceStatusSection(),
                     const SizedBox(height: 24),
                     _buildHelpSection(),
@@ -388,6 +466,130 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFirebaseMLSection() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.smart_toy,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Firebase ML Model',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Model Status Row
+            Row(
+              children: [
+                Icon(
+                  _modelInfo['isDownloaded'] == true
+                      ? Icons.check_circle
+                      : Icons.download,
+                  color: _modelInfo['isDownloaded'] == true
+                      ? Colors.green
+                      : Colors.orange,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Status: $_modelStatus',
+                        style: TextStyle(
+                          color: _modelInfo['isDownloaded'] == true
+                              ? Colors.green
+                              : Colors.orange,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (_modelInfo['isDownloaded'] == true &&
+                          _modelInfo['sizeFormatted'] != null)
+                        Text(
+                          'Size: ${_modelInfo['sizeFormatted']}',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: Colors.grey[600]),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            Text(
+              'The Firebase ML model is used for food recognition. Download it now to avoid waiting during image analysis.',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Action Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _isModelLoading ? null : _downloadModel,
+                    icon: _isModelLoading
+                        ? SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+                          )
+                        : Icon(
+                            _modelInfo['isDownloaded'] == true
+                                ? Icons.refresh
+                                : Icons.download,
+                          ),
+                    label: Text(
+                      _isModelLoading
+                          ? 'Downloading...'
+                          : _modelInfo['isDownloaded'] == true
+                          ? 'Update Model'
+                          : 'Download Model',
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                OutlinedButton.icon(
+                  onPressed: _isModelLoading ? null : _checkModelStatus,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Check Status'),
+                ),
+              ],
+            ),
           ],
         ),
       ),

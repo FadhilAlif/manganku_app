@@ -284,6 +284,73 @@ class FirebaseMLService {
     'modelName': _modelName,
   };
 
+  /// Check if model exists locally
+  Future<Map<String, dynamic>> getModelInfo() async {
+    if (_modelDownloader == null) {
+      return {'isDownloaded': false, 'error': 'Service not initialized'};
+    }
+
+    try {
+      // Try to get local model
+      final localModel = await _modelDownloader!.getModel(
+        _modelName,
+        FirebaseModelDownloadType.localModel,
+      );
+
+      return {
+        'isDownloaded': true,
+        'name': localModel.name,
+        'size': localModel.size,
+        'sizeFormatted': _formatFileSize(localModel.size),
+        'filePath': localModel.file.path,
+        'isLoaded': _interpreter != null,
+      };
+    } catch (e) {
+      return {'isDownloaded': false, 'error': 'Model not found locally'};
+    }
+  }
+
+  /// Format file size for display
+  String _formatFileSize(int bytes) {
+    if (bytes <= 0) return '0 B';
+    const suffixes = ['B', 'KB', 'MB', 'GB'];
+    var i = (bytes.bitLength - 1) ~/ 10;
+    if (i >= suffixes.length) i = suffixes.length - 1;
+    return '${(bytes / (1 << (i * 10))).toStringAsFixed(1)} ${suffixes[i]}';
+  }
+
+  /// Force download latest model
+  Future<FirebaseCustomModel> downloadLatestModel() async {
+    if (_modelDownloader == null) {
+      throw Exception('Firebase ML Service not initialized');
+    }
+
+    try {
+      print('Force downloading latest model: $_modelName');
+
+      final model = await _modelDownloader!.getModel(
+        _modelName,
+        FirebaseModelDownloadType.latestModel,
+        FirebaseModelDownloadConditions(
+          iosAllowsCellularAccess: true,
+          iosAllowsBackgroundDownloading: false,
+          androidChargingRequired: false,
+          androidWifiRequired: false,
+          androidDeviceIdleRequired: false,
+        ),
+      );
+
+      // Load the model immediately
+      await _loadTFLiteModel(model.file);
+
+      print('Latest model downloaded and loaded: ${model.name}');
+      return model;
+    } catch (e) {
+      print('Error downloading latest model: $e');
+      throw Exception('Failed to download latest model: $e');
+    }
+  }
+
   /// Dispose resources
   void dispose() {
     _interpreter?.close();

@@ -146,7 +146,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Food Recognition'),
+        title: const Text('ManganKu App'),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
         actions: [
@@ -175,12 +175,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(Icons.restaurant, size: 100, color: Colors.orange),
+            const Icon(Icons.restaurant, size: 100, color: Colors.indigo),
             const SizedBox(height: 12),
             Text(
               'Recognize Your Food',
@@ -205,7 +205,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               onPressed: _isLoading ? null : _captureImage,
               width: double.infinity,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             SecondaryButton(
               text: _isLoading ? 'Selecting...' : 'Select from Gallery',
               icon: Icons.photo_library,
@@ -213,7 +213,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               onPressed: _isLoading ? null : _selectFromGallery,
               width: double.infinity,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             // API Key Guidance Card
             if (!_hasApiKey)
               Card(
@@ -222,7 +222,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 clipBehavior: Clip.antiAlias,
                 color: Theme.of(context).colorScheme.errorContainer,
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(32),
                   child: Column(
                     children: [
                       Icon(
@@ -263,7 +263,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   ),
                 ),
               ),
-            if (!_hasApiKey) const SizedBox(height: 16),
+            if (!_hasApiKey) const SizedBox(height: 24),
             CustomCard(
               child: Column(
                 children: [
