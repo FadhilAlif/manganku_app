@@ -74,6 +74,16 @@ class _PreviewPageState extends State<PreviewPage> {
     context.pop();
   }
 
+  Future<void> _analyzeImage() async {
+    if (_currentImagePath == null || _isLoading) return;
+
+    // Placeholder untuk fungsi analyze
+    SnackBarUtil.showInfo(context, 'Analyze functionality coming soon!');
+
+    // TODO: Implement analyze functionality
+    // This will be implemented later with ML model integration
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_currentImagePath == null) {
@@ -138,6 +148,13 @@ class _PreviewPageState extends State<PreviewPage> {
                   icon: Icons.crop,
                   isLoading: _isLoading,
                   onPressed: _isLoading ? null : _cropImage,
+                  width: double.infinity,
+                ),
+                const SizedBox(height: 12),
+                PrimaryButton(
+                  text: 'Analyze Image',
+                  icon: Icons.analytics_outlined,
+                  onPressed: _isLoading ? null : _analyzeImage,
                   width: double.infinity,
                 ),
                 const SizedBox(height: 12),
