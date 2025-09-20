@@ -383,7 +383,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         });
                       },
                       icon: const Icon(Icons.edit),
-                      label: const Text('Update Key'),
+                      label: const Text('Edit Key'),
                     ),
                   ),
                   const SizedBox(width: 12),
