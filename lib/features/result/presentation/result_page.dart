@@ -131,34 +131,36 @@ class _ResultPageState extends State<ResultPage> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image and basic info
-            _buildImageSection(),
-            const SizedBox(height: 20),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image and basic info
+              _buildImageSection(),
+              const SizedBox(height: 20),
 
-            // Detection results
-            _buildDetectionResultsSection(topResult, allResults),
-            const SizedBox(height: 20),
+              // Detection results
+              _buildDetectionResultsSection(topResult, allResults),
+              const SizedBox(height: 20),
 
-            // Food description
-            _buildDescriptionSection(),
-            const SizedBox(height: 20),
+              // Food description
+              _buildDescriptionSection(),
+              const SizedBox(height: 20),
 
-            // Nutrition info
-            _buildNutritionSection(),
-            const SizedBox(height: 20),
+              // Nutrition info
+              _buildNutritionSection(),
+              const SizedBox(height: 20),
 
-            // MealDB info
-            _buildMealInfoSection(),
-            const SizedBox(height: 20),
+              // MealDB info
+              _buildMealInfoSection(),
+              const SizedBox(height: 20),
 
-            // Action buttons
-            _buildActionButtons(),
-          ],
+              // Action buttons
+              _buildActionButtons(),
+            ],
+          ),
         ),
       ),
     );
@@ -345,11 +347,14 @@ class _ResultPageState extends State<ResultPage> {
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'Nutrition Information (per 100g)',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    'Nutrition Info (per 100g)',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
@@ -407,12 +412,14 @@ class _ResultPageState extends State<ResultPage> {
               Text(
                 item['label']!,
                 style: Theme.of(context).textTheme.bodySmall,
+                overflow: TextOverflow.ellipsis,
               ),
               Text(
                 '${item['value']} ${item['unit']}',
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -435,11 +442,14 @@ class _ResultPageState extends State<ResultPage> {
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'Recipe Information',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    'Recipe Information',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
@@ -510,20 +520,24 @@ class _ResultPageState extends State<ResultPage> {
   }
 
   Widget _buildActionButtons() {
-    return Column(
+    return Row(
       children: [
-        PrimaryButton(
-          text: 'Analyze Another Image',
-          onPressed: () {
-            context.go('/');
-          },
+        Expanded(
+          child: SecondaryButton(
+            text: 'Back to Preview',
+            onPressed: () {
+              context.pop();
+            },
+          ),
         ),
-        const SizedBox(height: 8),
-        SecondaryButton(
-          text: 'Back to Preview',
-          onPressed: () {
-            context.pop();
-          },
+        const SizedBox(width: 16),
+        Expanded(
+          child: PrimaryButton(
+            text: 'Back to Home',
+            onPressed: () {
+              context.go('/');
+            },
+          ),
         ),
       ],
     );
