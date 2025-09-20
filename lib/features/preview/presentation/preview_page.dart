@@ -5,6 +5,8 @@ import 'package:manganku_app/core/widgets/custom_widgets.dart';
 import 'package:manganku_app/core/widgets/common_widgets.dart';
 import 'package:manganku_app/core/utils/ui_utils.dart';
 import 'package:manganku_app/core/services/image_service.dart';
+import 'package:manganku_app/core/services/firebase_ml_service.dart';
+import 'dart:io';
 
 class PreviewPage extends StatefulWidget {
   final String? imagePath;
@@ -77,11 +79,109 @@ class _PreviewPageState extends State<PreviewPage> {
   Future<void> _analyzeImage() async {
     if (_currentImagePath == null || _isLoading) return;
 
-    // Placeholder untuk fungsi analyze
-    SnackBarUtil.showInfo(context, 'Analyze functionality coming soon!');
+    setState(() {
+      _isLoading = true;
+    });
 
-    // TODO: Implement analyze functionality
-    // This will be implemented later with ML model integration
+    try {
+      final firebaseMLService = FirebaseMLService();
+
+      // Initialize Firebase ML service if not already initialized
+      if (!firebaseMLService.modelStatus['isInitialized']) {
+        SnackBarUtil.showInfo(context, 'Initializing Firebase ML service...');
+        await firebaseMLService.initialize();
+      }
+
+      // Download model if not already loaded
+      if (!firebaseMLService.isModelReady) {
+        SnackBarUtil.showInfo(context, 'Downloading ML model...');
+        await firebaseMLService.downloadModel();
+      }
+
+      // Analyze the image
+      SnackBarUtil.showInfo(context, 'Analyzing image...');
+      final results = await firebaseMLService.analyzeImage(
+        File(_currentImagePath!),
+      );
+
+      if (!mounted) return;
+
+      // Show results dialog
+      _showAnalysisResults(results);
+
+      // Navigate to result page
+      context.push(
+        '/result',
+        extra: {'imagePath': _currentImagePath!, 'analysisResult': results},
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      print('Analysis error: $e');
+      _showErrorSnackBar('Analysis failed: ${e.toString()}');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showAnalysisResults(Map<String, dynamic> results) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final topResult = results['topResult'] as Map<String, dynamic>;
+        final allResults = results['results'] as List<Map<String, dynamic>>;
+
+        return AlertDialog(
+          title: const Text('Food Recognition Results'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Top Result: ${topResult['label']}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                'Confidence: ${(topResult['confidence'] * 100).toStringAsFixed(1)}%',
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'All Results:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              ...allResults
+                  .take(5)
+                  .map(
+                    (result) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(result['label']),
+                          Text(
+                            '${(result['confidence'] * 100).toStringAsFixed(1)}%',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -152,8 +252,8 @@ class _PreviewPageState extends State<PreviewPage> {
                 ),
                 const SizedBox(height: 12),
                 PrimaryButton(
-                  text: 'Analyze Image',
-                  icon: Icons.analytics_outlined,
+                  text: 'Identify Food',
+                  icon: Icons.restaurant_menu,
                   onPressed: _isLoading ? null : _analyzeImage,
                   width: double.infinity,
                 ),

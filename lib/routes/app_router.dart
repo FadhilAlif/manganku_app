@@ -2,10 +2,14 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:manganku_app/features/home/presentation/home_page.dart';
 import 'package:manganku_app/features/preview/presentation/preview_page.dart';
+import 'package:manganku_app/features/debug/firebase_status_page.dart';
+import 'package:manganku_app/features/result/presentation/result_page.dart';
 
 class AppRouter {
   static const String homeRoute = '/';
   static const String previewRoute = '/preview';
+  static const String firebaseStatusRoute = '/firebase-status';
+  static const String resultRoute = '/result';
 
   static final GoRouter router = GoRouter(
     initialLocation: homeRoute,
@@ -21,6 +25,22 @@ class AppRouter {
         builder: (context, state) {
           final imagePath = state.extra as String?;
           return PreviewPage(imagePath: imagePath);
+        },
+      ),
+      GoRoute(
+        path: firebaseStatusRoute,
+        name: 'firebase-status',
+        builder: (context, state) => const FirebaseStatusPage(),
+      ),
+      GoRoute(
+        path: resultRoute,
+        name: 'result',
+        builder: (context, state) {
+          final data = state.extra as Map<String, dynamic>?;
+          return ResultPage(
+            imagePath: data?['imagePath'] ?? '',
+            analysisResult: data?['analysisResult'] ?? {},
+          );
         },
       ),
     ],

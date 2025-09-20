@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:manganku_app/core/services/api_key_service.dart';
+import 'package:manganku_app/core/models/nutrition.dart';
 
 class GeminiService {
   GeminiService._();
