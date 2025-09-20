@@ -1,0 +1,1 @@
+{"flutter":{"platforms":{"android":{"default":{"projectId":"manganku-app","appId":"1:750848404682:android:1e3a7e2b340d790a9d9833","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"manganku-app","configurations":{"android":"1:750848404682:android:1e3a7e2b340d790a9d9833","ios":"1:750848404682:ios:6fce9913260a567a9d9833"}}}}}}
