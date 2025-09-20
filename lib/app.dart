@@ -13,7 +13,7 @@ class ManganKuApp extends StatelessWidget {
       child: Consumer<ThemeNotifier>(
         builder: (context, themeNotifier, child) {
           return MaterialApp.router(
-            title: 'ManganKu',
+            title: 'ManganKu App',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
