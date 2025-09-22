@@ -625,7 +625,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 leading: const Icon(Icons.error, color: Colors.red),
                 title: const Text('Services Error'),
                 subtitle: Text(_serviceStatus['error']),
-                tileColor: Colors.red.withOpacity(0.1),
+                tileColor: Colors.red.withAlpha(255 * 1),
               ),
             ] else ...[
               ListTile(
@@ -728,7 +728,7 @@ class _SettingsPageState extends State<SettingsPage> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withAlpha(255 * 1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(

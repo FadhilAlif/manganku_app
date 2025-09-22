@@ -91,6 +91,7 @@ class ImageService {
   ) async {
     try {
       // Verify file exists
+      final theme = Theme.of(context);
       final file = File(imagePath);
       if (!await file.exists()) {
         throw Exception('Image file not found');
@@ -105,8 +106,8 @@ class ImageService {
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Crop Image',
-            toolbarColor: Theme.of(context).colorScheme.primary,
-            toolbarWidgetColor: Theme.of(context).colorScheme.onPrimary,
+            toolbarColor: theme.colorScheme.primary,
+            toolbarWidgetColor: theme.colorScheme.onPrimary,
             initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: false,
             hideBottomControls: false,

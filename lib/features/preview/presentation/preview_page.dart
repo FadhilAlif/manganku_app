@@ -222,7 +222,7 @@ class _PreviewPageState extends State<PreviewPage> {
               padding: const EdgeInsets.all(16.0),
               child: CustomCard(
                 padding: EdgeInsets.zero,
-                child: Container(
+                child: SizedBox(
                   width: double.infinity,
                   height: double.infinity,
                   child: _isLoading
