@@ -36,18 +36,13 @@ ManganKu is a cutting-edge mobile application that combines the power of artific
 
 ### For Users
 
-1. **Download & Install**
-
-   - Download the latest APK from the [Releases](releases/latest) page
-   - Install on your Android device (iOS version coming soon)
-
-2. **Setup API Keys**
+1. **Setup API Keys**
 
    - Open the app and go to Settings
    - Add your Gemini AI API Key for nutrition information
    - API keys are stored securely on your device
 
-3. **Start Using**
+2. **Start Using**
    - Tap "Take Photo" to capture food images
    - Or use "Select from Gallery" to choose existing photos
    - Crop the image to focus on the food
