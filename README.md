@@ -9,7 +9,7 @@
 [![TensorFlow Lite](https://img.shields.io/badge/TensorFlow%20Lite-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)](https://www.tensorflow.org/lite)
 [![Gemini AI](https://img.shields.io/badge/Gemini%20AI-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev)
 
-[Download APK](releases/latest) • [View Screenshots](#-screenshots) • [Report Bug](issues) • [Request Feature](issues)
+[View Screenshots](#-screenshots) • [Report Bug](issues) • [Request Feature](issues)
 
 </div>
 
@@ -457,7 +457,5 @@ copies or substantial portions of the Software.
 **Made with ❤️ by [Fadhil Alif](https://github.com/FadhilAlif)**
 
 **⭐ Star this repo if you find it helpful!**
-
-[⬆ Back to Top](#-manganku-app---ai-powered-food-recognition)
 
 </div>
