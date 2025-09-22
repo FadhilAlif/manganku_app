@@ -70,6 +70,9 @@ dependencies:
   permission_handler: ^12.0.1
   sqflite_common_ffi: ^2.3.6
 
+  # URL Launcher
+  url_launcher: ^6.2.6
+
   # Routing
   go_router: ^14.6.2
   firebase_core: ^4.0.0

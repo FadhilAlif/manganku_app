@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:manganku_app/core/models/nutrition.dart';
 import 'package:manganku_app/core/services/gemini_service.dart';
 import 'package:manganku_app/core/services/mealdb_service.dart';
@@ -33,6 +35,8 @@ class _ResultPageState extends State<ResultPage> {
   String? _nutritionError;
   String? _mealError;
   String? _descriptionError;
+
+  bool _showRecipeDetails = false;
 
   @override
   void initState() {
@@ -116,6 +120,139 @@ class _ResultPageState extends State<ResultPage> {
         _descriptionError = e.toString();
         _loadingDescription = false;
       });
+    }
+  }
+
+  List<Map<String, String>> _parseIngredients(Map<String, dynamic> mealInfo) {
+    final ingredients = <Map<String, String>>[];
+
+    for (int i = 1; i <= 20; i++) {
+      final ingredient = mealInfo['strIngredient$i'];
+      final measure = mealInfo['strMeasure$i'];
+
+      if (ingredient != null &&
+          ingredient.toString().trim().isNotEmpty &&
+          ingredient.toString() != "null") {
+        ingredients.add({
+          'ingredient': ingredient.toString().trim(),
+          'measure': (measure?.toString().trim() ?? '').isEmpty
+              ? 'To taste'
+              : measure.toString().trim(),
+        });
+      }
+    }
+
+    return ingredients;
+  }
+
+  Future<void> _launchYouTubeUrl(String url) async {
+    try {
+      final Uri uri = Uri.parse(url);
+
+      // Try to launch with different modes
+      bool launched = false;
+
+      // First try: Launch with external application (YouTube app)
+      try {
+        launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        debugPrint('Failed to launch with external app: $e');
+      }
+
+      // Second try: Launch with platform default (browser)
+      if (!launched) {
+        try {
+          launched = await launchUrl(uri, mode: LaunchMode.platformDefault);
+        } catch (e) {
+          debugPrint('Failed to launch with platform default: $e');
+        }
+      }
+
+      // Third try: Launch in web view mode as fallback
+      if (!launched) {
+        try {
+          launched = await launchUrl(uri, mode: LaunchMode.inAppWebView);
+        } catch (e) {
+          debugPrint('Failed to launch with in-app web view: $e');
+        }
+      }
+
+      if (!launched) {
+        // Show user-friendly message if all methods fail
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                'Could not open YouTube video. Trying alternative method...',
+              ),
+              backgroundColor: Colors.orange,
+              action: SnackBarAction(
+                label: 'Copy URL',
+                onPressed: () => _copyUrlToClipboard(url),
+                textColor: Colors.white,
+              ),
+            ),
+          );
+        }
+        // Try alternative method
+        await _launchUrlAlternative(url);
+      }
+    } catch (e) {
+      debugPrint('Could not launch YouTube URL: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Could not open YouTube video. URL copied to clipboard.',
+            ),
+            backgroundColor: Colors.orange,
+            action: SnackBarAction(
+              label: 'OK',
+              onPressed: () {},
+              textColor: Colors.white,
+            ),
+          ),
+        );
+      }
+      // Copy URL to clipboard as last resort
+      await _copyUrlToClipboard(url);
+    }
+  }
+
+  // Alternative method using platform channel
+  Future<void> _launchUrlAlternative(String url) async {
+    try {
+      const platform = MethodChannel('flutter/platform');
+      final Map<String, dynamic> arguments = {'url': url};
+      await platform.invokeMethod('launchUrl', arguments);
+    } catch (e) {
+      debugPrint('Alternative launch method failed: $e');
+      // Copy URL to clipboard as last resort
+      await _copyUrlToClipboard(url);
+    }
+  }
+
+  // Copy URL to clipboard as last resort
+  Future<void> _copyUrlToClipboard(String url) async {
+    try {
+      await Clipboard.setData(ClipboardData(text: url));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'YouTube URL copied to clipboard. Please open it manually.',
+            ),
+            backgroundColor: Colors.orange,
+            action: SnackBarAction(
+              label: 'OK',
+              onPressed: () {},
+              textColor: Colors.white,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Failed to copy URL to clipboard: $e');
     }
   }
 
@@ -622,20 +759,311 @@ class _ResultPageState extends State<ResultPage> {
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
 
-        if (mealInfo['strInstructions'] != null) ...[
-          const SizedBox(height: 12),
-          Text(
-            'Instructions:',
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+        // Category and Area info
+        if (mealInfo['strCategory'] != null || mealInfo['strArea'] != null) ...[
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              if (mealInfo['strCategory'] != null) ...[
+                Chip(
+                  label: Text(mealInfo['strCategory']),
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.secondaryContainer,
+                  labelStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSecondaryContainer,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              if (mealInfo['strArea'] != null)
+                Chip(
+                  label: Text(mealInfo['strArea']),
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.tertiaryContainer,
+                  labelStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onTertiaryContainer,
+                    fontSize: 12,
+                  ),
+                ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            mealInfo['strInstructions'],
-            style: Theme.of(context).textTheme.bodyMedium,
-            maxLines: 4,
-            overflow: TextOverflow.ellipsis,
+        ],
+
+        // Show Detail Button
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              setState(() {
+                _showRecipeDetails = !_showRecipeDetails;
+              });
+            },
+            icon: Icon(
+              _showRecipeDetails ? Icons.expand_less : Icons.expand_more,
+            ),
+            label: Text(_showRecipeDetails ? 'Hide Details' : 'Show Details'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+              foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
+          ),
+        ),
+
+        // Expanded Recipe Details
+        if (_showRecipeDetails) ...[
+          const SizedBox(height: 16),
+          _buildExpandedRecipeDetails(mealInfo),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildExpandedRecipeDetails(Map<String, dynamic> mealInfo) {
+    final ingredients = _parseIngredients(mealInfo);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Ingredients Section
+        if (ingredients.isNotEmpty) ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.restaurant_menu,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Ingredients (${ingredients.length} items)',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ...ingredients.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final ingredient = entry.value;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${index + 1}',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                ingredient['ingredient']!,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(fontWeight: FontWeight.w500),
+                              ),
+                              Text(
+                                ingredient['measure']!,
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        // Instructions Section
+        if (mealInfo['strInstructions'] != null) ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.list_alt,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Cooking Instructions',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  mealInfo['strInstructions'],
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(height: 1.5),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        // Additional Information
+        if (mealInfo['strYoutube'] != null || mealInfo['strTags'] != null) ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Additional Information',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                if (mealInfo['strTags'] != null &&
+                    mealInfo['strTags'].toString().isNotEmpty) ...[
+                  Text(
+                    'Tags:',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: mealInfo['strTags']
+                        .toString()
+                        .split(',')
+                        .map<Widget>(
+                          (tag) => Chip(
+                            label: Text(
+                              tag.trim(),
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHigh,
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                if (mealInfo['strYoutube'] != null &&
+                    mealInfo['strYoutube'].toString().isNotEmpty) ...[
+                  Text(
+                    'Video Tutorial:',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        _launchYouTubeUrl(mealInfo['strYoutube']);
+                      },
+                      icon: const Icon(
+                        Icons.play_circle_fill,
+                        color: Colors.red,
+                      ),
+                      label: const Text('Watch on YouTube'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.errorContainer,
+                        foregroundColor: Theme.of(
+                          context,
+                        ).colorScheme.onErrorContainer,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ],
       ],
