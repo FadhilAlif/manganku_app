@@ -9,7 +9,7 @@
 [![TensorFlow Lite](https://img.shields.io/badge/TensorFlow%20Lite-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)](https://www.tensorflow.org/lite)
 [![Gemini AI](https://img.shields.io/badge/Gemini%20AI-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev)
 
-[Download APK](releases/latest) • [View Screenshots](#-screenshots) • [Report Bug](issues) • [Request Feature](issues)
+[📱 Download APK](https://github.com/FadhilAlif/manganku_app/releases/latest) • [📸 View Screenshots](#-screenshots) • [🐛 Report Bug](https://github.com/FadhilAlif/manganku_app/issues) • [💡 Request Feature](https://github.com/FadhilAlif/manganku_app/issues)
 
 </div>
 
@@ -38,7 +38,7 @@ ManganKu is a cutting-edge mobile application that combines the power of artific
 
 1. **Download & Install**
 
-   - Download the latest APK from the [Releases](releases/latest) page
+   - Download the latest APK from the [Releases](https://github.com/FadhilAlif/manganku_app/releases/latest) page
    - Install on your Android device (iOS version coming soon)
 
 2. **Setup API Keys**
