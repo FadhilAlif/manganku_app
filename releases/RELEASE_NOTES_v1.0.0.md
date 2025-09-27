@@ -5,14 +5,16 @@
 ## 📱 What's New
 
 ### ✨ Core Features
+
 - **AI-Powered Food Recognition**: Advanced machine learning model to identify food items
 - **Smart Camera Integration**: Take photos or select from gallery with cropping
-- **Comprehensive Nutrition Info**: Detailed nutritional breakdown 
+- **Comprehensive Nutrition Info**: Detailed nutritional breakdown
 - **Recipe Database**: Access to thousands of recipes from MealDB
 - **Video Tutorials**: Direct links to YouTube cooking tutorials
 - **Modern UI/UX**: Clean, intuitive interface with skeleton loading
 
 ### 🔧 Technical Highlights
+
 - **Firebase ML**: Cloud-based model hosting
 - **TensorFlow Lite**: On-device machine learning inference
 - **Google Gemini AI**: Nutritional information generation
@@ -21,14 +23,16 @@
 ## 📦 Download Options
 
 ### Universal APK (Recommended)
+
 - **File**: `manganku-app-v1.0.0.apk`
 - **Size**: ~77MB
 - **Compatibility**: All Android devices (API 21+)
 
 ### Architecture-Specific APKs (Smaller size)
+
 - **ARM64 (64-bit)**: `manganku-app-v1.0.0-arm64-v8a.apk` (~30MB)
   - For most modern Android devices (2017+)
-- **ARMv7 (32-bit)**: `manganku-app-v1.0.0-armeabi-v7a.apk` (~26MB)  
+- **ARMv7 (32-bit)**: `manganku-app-v1.0.0-armeabi-v7a.apk` (~26MB)
   - For older Android devices
 - **x86_64**: `manganku-app-v1.0.0-x86_64.apk` (~34MB)
   - For Android emulators and x86 devices
@@ -44,11 +48,13 @@
 ## ⚙️ Setup Requirements
 
 ### Required API Keys
+
 - **Gemini AI API Key**: Required for nutrition information
   - Get from: https://makersuite.google.com/app/apikey
   - Configure in: App Settings > API Configuration
 
 ### Permissions
+
 - **Camera**: For taking food photos
 - **Storage**: For saving and accessing images
 - **Internet**: For API calls and model downloads
@@ -63,6 +69,7 @@
 ## 🐛 Bug Reports & Support
 
 Found a bug or need help?
+
 - **Report Issues**: https://github.com/FadhilAlif/manganku_app/issues
 - **Feature Requests**: https://github.com/FadhilAlif/manganku_app/issues
 - **Discussions**: https://github.com/FadhilAlif/manganku_app/discussions
@@ -70,6 +77,7 @@ Found a bug or need help?
 ## 📈 What's Next?
 
 ### Planned Features (v1.1.0)
+
 - iOS version support
 - Offline food recognition mode
 - Multi-language support

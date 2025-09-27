@@ -47,7 +47,7 @@ ManganKu is a cutting-edge mobile application that combines the power of artific
    - Add your Gemini AI API Key for nutrition information
    - API keys are stored securely on your device
 
-3. **Start Using**
+2. **Start Using**
    - Tap "Take Photo" to capture food images
    - Or use "Select from Gallery" to choose existing photos
    - Crop the image to focus on the food
@@ -457,7 +457,5 @@ copies or substantial portions of the Software.
 **Made with ❤️ by [Fadhil Alif](https://github.com/FadhilAlif)**
 
 **⭐ Star this repo if you find it helpful!**
-
-[⬆ Back to Top](#-manganku-app---ai-powered-food-recognition)
 
 </div>
